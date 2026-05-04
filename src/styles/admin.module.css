@@ -1,0 +1,128 @@
+.wrapper {
+  padding: 2rem 5%;
+  min-height: calc(100vh - 70px);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.topBar h1 {
+  margin: 0;
+}
+
+.topBar p {
+  margin: 0.25rem 0 0;
+  opacity: 0.8;
+}
+
+.logoutBtn {
+  border: 0;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  background: #111827;
+  color: #fff;
+  cursor: pointer;
+}
+
+.walletCard {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.walletCard h2 {
+  margin: 0;
+}
+
+.balance {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.walletActions {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.walletActions input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #d1d5db);
+}
+
+.walletActions button {
+  border: 0;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  background: var(--primary);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.withdrawBtn {
+  background: #ef4444 !important;
+  color: #fff;
+}
+
+.tableSection {
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.empty {
+  text-align: center;
+  opacity: 0.7;
+}
+
+.badge {
+  display: inline-block;
+  text-transform: capitalize;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+}
+
+.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.successful {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.failed {
+  background: #fee2e2;
+  color: #991b1b;
+}
