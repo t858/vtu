@@ -10,6 +10,7 @@ const examPrices = {
 };
 
 const ExamPins = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     examType: 'WAEC',
     quantity: 1,
@@ -25,6 +26,7 @@ const ExamPins = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await fetch('http://localhost:3000/api/transactions/initialize', {
         method: 'POST',
@@ -53,6 +55,7 @@ const ExamPins = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
       window.location.href = paystackUrl;
     } catch (error) {
       alert(error.message || 'Payment initialization failed');
+      setLoading(false);
     }
   };
 
@@ -127,8 +130,12 @@ const ExamPins = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
               <p>Total to Pay: ₦{totalPrice.toLocaleString()}</p>
             </div>
 
-            <button type="submit" className={styles.btn}>
-              Proceed to Pay <i className="fa-solid fa-lock"></i>
+            <button type="submit" className={styles.btn} disabled={loading}>
+              {loading ? (
+                <>Connecting to Paystack... <i className="fa-solid fa-spinner fa-spin"></i></>
+              ) : (
+                <>Proceed to Pay <i className="fa-solid fa-lock"></i></>
+              )}
             </button>
           </form>
         </div>

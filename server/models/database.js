@@ -29,6 +29,10 @@ const Transaction = sequelize.define('Transaction', {
     type: DataTypes.STRING,
     defaultValue: 'pending' // pending, successful, failed
   },
+  failureReason: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
   metadata: {
     type: DataTypes.TEXT,
     get: function() {
@@ -45,6 +49,21 @@ const Wallet = sequelize.define('Wallet', {
     type: DataTypes.INTEGER,
     allowNull: false,
     defaultValue: 0
+  }
+});
+
+const SiteVisit = sequelize.define('SiteVisit', {
+  ip: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  path: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  userAgent: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 });
 
@@ -66,5 +85,6 @@ sequelize.sync().then(async () => {
 module.exports = {
   sequelize,
   Transaction,
-  Wallet
+  Wallet,
+  SiteVisit
 };

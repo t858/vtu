@@ -26,45 +26,107 @@ router.post('/paystack', async (req, res) => {
   // 3. Handle successful charge
   if (event.event === 'charge.success') {
     const data = event.data;
-    const metadata = data.metadata;
-    const transaction = await Transaction.findOne({ where: { reference: data.reference } });
-    
-    console.log(`Payment successful for ₦${data.amount / 100}`);
-    console.log(`Metadata:`, metadata);
+    const metadata = data.metadata || {};
+    let transaction = await Transaction.findOne({ where: { reference: data.reference } });
+    const amountInNaira = Math.floor(data.amount / 100);
 
-    if (transaction) {
+    console.log(`[WEBHOOK] Payment successful for ₦${amountInNaira} (Ref: ${data.reference})`);
+
+    if (!transaction) {
+      transaction = await Transaction.create({
+        reference: data.reference,
+        email: data.customer?.email,
+        amount: amountInNaira,
+        type: metadata.type || 'unknown',
+        status: 'pending',
+        metadata
+      });
+    }
+
+    const currentMeta = transaction.metadata || {};
+
+    // Check if already fulfilled by /verify route to prevent double dispensing
+    if (!currentMeta.fulfillment) {
+      let fulfillment;
+      if (metadata.type === 'airtime') {
+        fulfillment = await dispenseAirtime(metadata.network, metadata.phone, amountInNaira, data.reference)
+          .catch(err => { console.error('Failed to dispense airtime:', err); return null; });
+      } else if (metadata.type === 'exam_pin') {
+        fulfillment = await dispenseExamPin(metadata.examType, metadata.quantity, data.customer?.email, metadata.phone, data.reference)
+          .catch(err => { console.error('Failed to dispense exam pin:', err); return null; });
+      }
+
       transaction.status = 'successful';
-      transaction.type = metadata?.type || transaction.type;
-      transaction.amount = Math.floor(data.amount / 100);
-      transaction.metadata = metadata || {};
+      transaction.failureReason = null;
+      transaction.type = metadata.type || transaction.type;
+      transaction.amount = amountInNaira;
+      transaction.metadata = {
+        ...currentMeta,
+        ...metadata,
+        fulfillment
+      };
       await transaction.save();
-    }
 
-    const wallet = await Wallet.findByPk(1);
-    if (wallet) {
-      wallet.balance += Math.floor(data.amount / 100);
-      await wallet.save();
-    }
-
-    // 4. Trigger VTU Services based on what was purchased
-    if (metadata && metadata.type === 'airtime') {
-      dispenseAirtime(metadata.network, metadata.phone, data.amount / 100)
-        .catch(err => console.error('Failed to dispense airtime:', err));
-    } else if (metadata && metadata.type === 'exam_pin') {
-      dispenseExamPin(metadata.examType, metadata.quantity, data.customer.email, metadata.phone)
-        .catch(err => console.error('Failed to dispense exam pin:', err));
+      const wallet = await Wallet.findByPk(1);
+      if (wallet) {
+        wallet.balance += amountInNaira;
+        await wallet.save();
+      }
     }
   } else if (event.event === 'charge.failed') {
     const data = event.data;
     const transaction = await Transaction.findOne({ where: { reference: data.reference } });
+    const reason = data.gateway_response || data.message || 'Payment declined by bank or customer';
     if (transaction) {
       transaction.status = 'failed';
+      transaction.failureReason = reason;
       await transaction.save();
     }
   }
 
-  // Important: Always return 200 OK to Paystack to prevent them from retrying
+  // Important: Always return 200 OK to Paystack
   res.status(200).send('Webhook received');
+});
+
+// VTU Africa Webhook / Callback endpoint
+router.all('/vtu', async (req, res) => {
+  try {
+    let payload = {};
+    if (req.body && req.body.length > 0) {
+      try {
+        payload = JSON.parse(req.body.toString());
+      } catch (e) {
+        payload = { raw: req.body.toString() };
+      }
+    }
+    const data = { ...req.query, ...payload };
+    console.log('[VTU AFRICA WEBHOOK RECEIVED]:', data);
+
+    const ref = data.ref || data.reference || data.ReferenceID;
+    if (ref) {
+      const transaction = await Transaction.findOne({ where: { reference: ref } });
+      if (transaction) {
+        const status = String(data.status || data.Status || '').toLowerCase();
+        if (status === 'completed' || status === 'successful' || data.code === 101) {
+          transaction.status = 'successful';
+        } else if (status === 'failed' || status === 'reversed') {
+          transaction.status = 'failed';
+          transaction.failureReason = data.message || 'VTU transaction failed or reversed';
+        }
+        transaction.metadata = {
+          ...(transaction.metadata || {}),
+          vtuCallback: data
+        };
+        await transaction.save();
+      }
+    }
+
+    // Always respond 200 OK
+    return res.status(200).json({ status: 'success', message: 'VTU webhook acknowledged' });
+  } catch (error) {
+    console.error('[VTU AFRICA WEBHOOK ERROR]:', error);
+    return res.status(200).json({ status: 'received' });
+  }
 });
 
 module.exports = router;
