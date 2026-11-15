@@ -1,7 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const { Transaction, Wallet } = require('../models/database');
-const { dispenseAirtime, dispenseExamPin } = require('../services/vtuService');
+const { dispenseAirtime, dispenseDataBundle, dispenseExamPin } = require('../services/vtuService');
 const router = express.Router();
 
 // Initialize Paystack Transaction
@@ -109,6 +109,8 @@ router.get('/verify/:reference', async (req, res) => {
     if (!fulfillment) {
       if (metadata.type === 'airtime') {
         fulfillment = await dispenseAirtime(metadata.network, metadata.phone, amountInNaira, reference);
+      } else if (metadata.type === 'data') {
+        fulfillment = await dispenseDataBundle(metadata.service, metadata.phone, metadata.dataPlan, reference, metadata.maxAmount);
       } else if (metadata.type === 'exam_pin') {
         fulfillment = await dispenseExamPin(
           metadata.examType,

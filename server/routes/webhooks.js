@@ -1,6 +1,6 @@
 const express = require('express');
 const crypto = require('crypto');
-const { dispenseAirtime, dispenseExamPin } = require('../services/vtuService');
+const { dispenseAirtime, dispenseDataBundle, dispenseExamPin } = require('../services/vtuService');
 const { Transaction, Wallet } = require('../models/database');
 const router = express.Router();
 
@@ -51,6 +51,9 @@ router.post('/paystack', async (req, res) => {
       if (metadata.type === 'airtime') {
         fulfillment = await dispenseAirtime(metadata.network, metadata.phone, amountInNaira, data.reference)
           .catch(err => { console.error('Failed to dispense airtime:', err); return null; });
+      } else if (metadata.type === 'data') {
+        fulfillment = await dispenseDataBundle(metadata.service, metadata.phone, metadata.dataPlan, data.reference, metadata.maxAmount)
+          .catch(err => { console.error('Failed to dispense data:', err); return null; });
       } else if (metadata.type === 'exam_pin') {
         fulfillment = await dispenseExamPin(metadata.examType, metadata.quantity, data.customer?.email, metadata.phone, data.reference)
           .catch(err => { console.error('Failed to dispense exam pin:', err); return null; });

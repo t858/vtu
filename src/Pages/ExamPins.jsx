@@ -1,6 +1,7 @@
 import Header from "../components/Header"
 import styles from '../styles/services.module.css'
 import { useState } from 'react'
+import { API_BASE_URL } from '../config/api'
 
 const examPrices = {
   'WAEC': 4000,
@@ -28,7 +29,7 @@ const ExamPins = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/api/transactions/initialize', {
+      const response = await fetch(`${API_BASE_URL}/api/transactions/initialize`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

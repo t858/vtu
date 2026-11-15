@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import styles from "../styles/admin.module.css";
+import { API_BASE_URL as BASE_URL } from "../config/api";
 
-const API_BASE_URL = "http://localhost:3000/api/admin";
+const API_BASE_URL = `${BASE_URL}/api/admin`;
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
