@@ -2,6 +2,7 @@ import Header from "../components/Header"
 import styles from '../styles/services.module.css'
 import { useState, useMemo } from 'react'
 import { API_BASE_URL } from '../config/api'
+import { detectNetwork } from '../utils/networkDetector'
 
 // Active data plans based on VTU Africa specifications
 const DATA_PLANS = {
@@ -42,6 +43,7 @@ const DATA_PLANS = {
 
 const Airtime = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
   const [loading, setLoading] = useState(false);
+  const [autoDetected, setAutoDetected] = useState(false);
   const [formData, setFormData] = useState({
     network: 'MTN',
     phone: '',
@@ -55,18 +57,45 @@ const Airtime = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
     return DATA_PLANS[formData.network] || DATA_PLANS.MTN;
   }, [formData.network]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === 'network') {
-      const plansForNetwork = DATA_PLANS[value] || [];
+  const handlePhoneChange = (e) => {
+    const newPhone = e.target.value;
+    const detected = detectNetwork(newPhone);
+
+    if (detected) {
+      const plansForNetwork = DATA_PLANS[detected] || [];
       const defaultPlan = plansForNetwork[0];
       setFormData(prev => ({
         ...prev,
-        network: value,
+        phone: newPhone,
+        network: detected,
         selectedDataPlanIndex: 0,
         amount: prev.plans === 'data' && defaultPlan ? String(defaultPlan.price) : prev.amount
       }));
-    } else if (name === 'plans') {
+      setAutoDetected(true);
+    } else {
+      setFormData(prev => ({ ...prev, phone: newPhone }));
+      setAutoDetected(false);
+    }
+  };
+
+  const handleNetworkChange = (e) => {
+    const selectedNetwork = e.target.value;
+    const plansForNetwork = DATA_PLANS[selectedNetwork] || [];
+    const defaultPlan = plansForNetwork[0];
+
+    setFormData(prev => ({
+      ...prev,
+      network: selectedNetwork,
+      selectedDataPlanIndex: 0,
+      amount: prev.plans === 'data' && defaultPlan ? String(defaultPlan.price) : prev.amount
+    }));
+    // User made an explicit manual change
+    setAutoDetected(false);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'plans') {
       const defaultPlan = currentDataPlans[0];
       setFormData(prev => ({
         ...prev,
@@ -154,12 +183,32 @@ const Airtime = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="network">Network Provider</label>
+              <label htmlFor="phone">Phone Number</label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                placeholder="08012345678"
+                value={formData.phone}
+                onChange={handlePhoneChange}
+                required
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <div className={styles.labelRow}>
+                <label htmlFor="network">Network Provider</label>
+                {autoDetected && (
+                  <span className={styles.detectedBadge}>
+                    <i className="fa-solid fa-circle-check"></i> Auto-detected: {formData.network}
+                  </span>
+                )}
+              </div>
               <select
                 id="network"
                 name="network"
                 value={formData.network}
-                onChange={handleChange}
+                onChange={handleNetworkChange}
                 required
               >
                 <option value="MTN">MTN</option>
@@ -167,6 +216,11 @@ const Airtime = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
                 <option value="Glo">Glo</option>
                 <option value="9mobile">9mobile</option>
               </select>
+              <small className={styles.helperText}>
+                {autoDetected 
+                  ? '✨ Detected from your phone number. You can still manually change this (e.g. for ported lines).'
+                  : 'Select your network or type your number above to auto-detect.'}
+              </small>
             </div>
 
             {formData.plans === 'data' ? (
@@ -202,19 +256,6 @@ const Airtime = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
                 />
               </div>
             )}
-
-            <div className={styles.formGroup}>
-              <label htmlFor="phone">Phone Number</label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                placeholder="08012345678"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-              />
-            </div>
 
             <div className={styles.formGroup}>
               <label htmlFor="email">Email Address (For Receipt)</label>
