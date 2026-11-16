@@ -9,8 +9,11 @@ router.post('/initialize', async (req, res) => {
   try {
     const { email, amount, metadata } = req.body;
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const callbackUrl = `${frontendUrl}/payment/success`;
+    const frontendUrl = process.env.FRONTEND_URL 
+      || req.headers.origin 
+      || (req.headers.host ? `https://${req.headers.host}` : null)
+      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5173');
+    const callbackUrl = `${frontendUrl.replace(/\/$/, '')}/payment/success`;
 
     const response = await axios.post(
       'https://api.paystack.co/transaction/initialize',
