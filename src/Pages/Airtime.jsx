@@ -43,7 +43,6 @@ const DATA_PLANS = {
 
 const Airtime = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
   const [loading, setLoading] = useState(false);
-  const [autoDetected, setAutoDetected] = useState(false);
   const [formData, setFormData] = useState({
     network: 'MTN',
     phone: '',
@@ -71,10 +70,8 @@ const Airtime = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
         selectedDataPlanIndex: 0,
         amount: prev.plans === 'data' && defaultPlan ? String(defaultPlan.price) : prev.amount
       }));
-      setAutoDetected(true);
     } else {
       setFormData(prev => ({ ...prev, phone: newPhone }));
-      setAutoDetected(false);
     }
   };
 
@@ -89,8 +86,6 @@ const Airtime = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
       selectedDataPlanIndex: 0,
       amount: prev.plans === 'data' && defaultPlan ? String(defaultPlan.price) : prev.amount
     }));
-    // User made an explicit manual change
-    setAutoDetected(false);
   };
 
   const handleChange = (e) => {
@@ -196,14 +191,7 @@ const Airtime = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
             </div>
 
             <div className={styles.formGroup}>
-              <div className={styles.labelRow}>
-                <label htmlFor="network">Network Provider</label>
-                {autoDetected && (
-                  <span className={styles.detectedBadge}>
-                    <i className="fa-solid fa-circle-check"></i> Auto-detected: {formData.network}
-                  </span>
-                )}
-              </div>
+              <label htmlFor="network">Network Provider</label>
               <select
                 id="network"
                 name="network"
@@ -216,11 +204,6 @@ const Airtime = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
                 <option value="Glo">Glo</option>
                 <option value="9mobile">9mobile</option>
               </select>
-              <small className={styles.helperText}>
-                {autoDetected 
-                  ? '✨ Detected from your phone number. You can still manually change this (e.g. for ported lines).'
-                  : 'Select your network or type your number above to auto-detect.'}
-              </small>
             </div>
 
             {formData.plans === 'data' ? (
