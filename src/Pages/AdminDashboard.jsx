@@ -49,9 +49,22 @@ const AdminDashboard = () => {
         return;
       }
 
-      const transactionsData = await transactionsResponse.json();
-      const walletData = await walletResponse.json();
-      const statsData = await statsResponse.json();
+      const parseJsonSafe = async (res) => {
+        const ct = res.headers.get("content-type") || "";
+        return ct.includes("application/json") ? res.json() : null;
+      };
+
+      const transactionsData = (await parseJsonSafe(transactionsResponse)) || [];
+      const walletData = (await parseJsonSafe(walletResponse)) || { balance: 0 };
+      const statsData = (await parseJsonSafe(statsResponse)) || {
+        totalVisits: 0,
+        uniqueVisitors: 0,
+        totalPurchases: 0,
+        uniqueBuyers: 0,
+        failedPurchases: 0,
+        pendingPurchases: 0,
+        totalRevenue: 0
+      };
 
       setTransactions(transactionsData.transactions || []);
       setWalletBalance(walletData.balance || 0);

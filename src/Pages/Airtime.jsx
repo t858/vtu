@@ -138,11 +138,19 @@ const Airtime = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
         })
       });
 
-      const data = await response.json();
+      let data = {};
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(text || `Server returned error (${response.status})`);
+      }
+
       const paystackUrl = data?.data?.authorization_url;
 
       if (!response.ok || !paystackUrl) {
-        throw new Error(data?.error || 'Could not initialize payment');
+        throw new Error(data?.error || data?.message || 'Could not initialize payment');
       }
 
       window.location.href = paystackUrl;

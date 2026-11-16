@@ -46,7 +46,14 @@ const PaymentSuccess = ({ menu, toggleMenu, isDarkMode, toggleTheme }) => {
     const verifyTransaction = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/transactions/verify/${encodeURIComponent(reference)}`);
-        const result = await response.json();
+        let result = {};
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          result = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(text || `Server error (${response.status})`);
+        }
 
         if (response.ok && result.success) {
           setOrder(result.data);
