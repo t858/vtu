@@ -1,7 +1,10 @@
 const axios = require('axios');
 const dns = require('dns');
+const https = require('https');
 
-// Ensure IPv4 lookup precedence on Node/Windows environments
+// Force IPv4 lookup and connection agent to avoid Cloudflare IPv6 timeouts
+const ipv4Agent = new https.Agent({ family: 4, keepAlive: true });
+
 try {
   dns.setDefaultResultOrder('ipv4first');
 } catch (e) {}
@@ -46,7 +49,8 @@ async function dispenseAirtime(network, phone, amount, reference) {
           ref
         },
         headers: VTU_HEADERS,
-        timeout: 20000
+        httpsAgent: ipv4Agent,
+        timeout: 25000
       });
 
       const resData = response.data;
@@ -116,7 +120,8 @@ async function dispenseDataBundle(service, phone, dataPlan, reference, maxAmount
       const response = await axios.get(endpoint, {
         params,
         headers: VTU_HEADERS,
-        timeout: 20000
+        httpsAgent: ipv4Agent,
+        timeout: 25000
       });
 
       const resData = response.data;
@@ -185,6 +190,7 @@ async function dispenseExamPin(examType, quantity = 1, email, phone, reference, 
           sender: email || 'customer@example.com'
         },
         headers: VTU_HEADERS,
+        httpsAgent: ipv4Agent,
         timeout: 25000
       });
 
