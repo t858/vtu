@@ -31,7 +31,7 @@ const HeroWrapper = () => {
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                 <Link to="/airtime">
                   <button className={style.btn}>
-                    Buy Airtime <i className="fa-solid fa-phone fa-beat"></i>
+                    Buy Airtime/Data <i className="fa-solid fa-phone fa-beat"></i>
                   </button>
                 </Link>
                 <Link to="/exam-pins">
