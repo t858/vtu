@@ -40,7 +40,7 @@ const MobileNav = ({ toggleMenu, isDarkMode, toggleTheme }) => {
             </li>
             <li>
               <NavLink className="nav-link" to="/airtime">
-                Buy Airtime/Data
+                Buy Data/Air..
               </NavLink>
             </li>
             <li>
