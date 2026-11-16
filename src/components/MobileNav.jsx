@@ -48,11 +48,6 @@ const MobileNav = ({ toggleMenu, isDarkMode, toggleTheme }) => {
                 Exam Pins
               </NavLink>
             </li>
-            <li>
-              <NavLink className="nav-link" to="/admin/login">
-                Admin Login
-              </NavLink>
-            </li>
           </ul>
         </div>
       </div>

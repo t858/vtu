@@ -8,13 +8,14 @@ import Login from "./auth/Login"
 import AdminDashboard from "./Pages/AdminDashboard"
 import { useState, useEffect } from "react"
 import { Navigate, useLocation } from "react-router-dom"
+import { API_BASE_URL } from "./config/api"
 
 const AnalyticsTracker = () => {
   const location = useLocation();
 
   useEffect(() => {
     if (!location.pathname.startsWith('/admin')) {
-      fetch('http://localhost:3000/api/track-visit', {
+      fetch(`${API_BASE_URL}/api/track-visit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path: location.pathname })

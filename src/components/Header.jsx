@@ -51,10 +51,6 @@ const Header = () => {
           </ul>
 
           <div className={styles.btns}>
-            <Link to="/admin/login">
-              <i className="fa fa-user"></i> <span>Admin</span>
-            </Link>
-
             <button onClick={toggleMenu} className="menu-btn">
               <span className="material-symbols-outlined">menu</span>
             </button>
